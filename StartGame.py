@@ -103,9 +103,15 @@ class DictionaryWindow(tk.Frame):
         self.dictionary_list.grid(row=0,column=0,sticky="NSWE",columnspan=5,rowspan=5)
         self.dictionary_list.bind('<<ListboxSelect>>', self.click_dictionary)
 
+        scrollbar = tk.Scrollbar(self.parent, orient="vertical")
+        scrollbar.config(command=self.dictionary_list.yview)
+        scrollbar.grid(row=0,column=1,sticky='e')
+        self.dictionary_list.config(yscrollcommand=scrollbar.set)
+
         for role in AllRoles.RolesList:
             self.dictionary_list.insert("end",str(role.value))
             self.dictionary_map[str(role.value)] = str(role.value.get_description())
+            
     def click_dictionary(self,event):
         self.change_message(\
             self.dictionary_map[str(self.dictionary_list.get(self.dictionary_list.curselection()))])
@@ -148,9 +154,11 @@ class MessageBoard(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self,parent,*args,**kwargs)
         self.parent = parent
+
         self.label = tk.Label(self,bg="white",height=5,width=37,\
             font=("Comic Sans",9),justify=tk.LEFT,anchor="nw",wraplength=250)
         self.label.grid(row=0,rowspan=3)
+
     def change_message(self,string):
         self.label.config(text=string)
 if __name__ == "__main__":
