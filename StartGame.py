@@ -156,6 +156,7 @@ class ChessboardFrame(tk.Frame):
         self.message_board.change_message(message)
         self.update_board_screen(move_tiles,kill_tiles,ability_tiles)
     def update_board_screen(self,move_tiles,kill_tiles,ability_tiles):
+        self.message_board.change_message(self.gamemaster.check_lose_condition())
         board = self.gamemaster.board
         for row in range(8):
             for col in range(8):

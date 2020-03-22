@@ -9,6 +9,7 @@ class GameMaster():
         self.board = [[[] for col in range(8)] for row in range(8)]
         self.turn = random.choice(["WHITE","BLACK"])
         self.last_piece_clicked = [9,9]
+        self.whites_blacks_num = [16,16]
         self.ability_tiles = []
         self.move_tiles = []
         self.kill_tiles = []
@@ -71,7 +72,7 @@ class GameMaster():
             return [],[]
     def tile_click(self,row,col):
         if not self.keep_playing:
-            return
+            return [],[],[],""
         message = ""
         # If you clicked a tile but no tile is highlighted, or if you click a piece that's not yours, or if tiles are highlighted and you don't click any
         if (isinstance(self.board[row][col],list) and not self.moveset_active)\
@@ -103,9 +104,9 @@ class GameMaster():
         self.board[row][col].role.activate_ability(row,col,self.board)
         return self.board[row][col].role.ability_message()
     def ability_button_clicked(self):
-        if not self.keep_playing: return
+        if not self.keep_playing: return ""
         if self.last_piece_clicked == [9,9]:
-            return
+            return ""
         row,col = self.last_piece_clicked
         self.ability_tiles = self.board[row][col].role.get_ability_tiles()
         return self.board[row][col].role.ability_message()
@@ -113,15 +114,16 @@ class GameMaster():
 
         if [row,col] in self.kill_tiles:
             self.kill(row,col)
-        else:
-            self.board[row][col] = self.board[self.last_piece_clicked[0]][self.last_piece_clicked[1]]
-            self.board[self.last_piece_clicked[0]][self.last_piece_clicked[1]] = []
-        self.next_turn()
-    def kill(self,row,col):
-        if self.board[row][col].role != None:
-            self.graveyard.append("{0}: {1}".format(str(self.board[row][col]),str(self.board[row][col].role)))
         self.board[row][col] = self.board[self.last_piece_clicked[0]][self.last_piece_clicked[1]]
         self.board[self.last_piece_clicked[0]][self.last_piece_clicked[1]] = []
+        self.next_turn()
+    def kill(self,row,col):
+        if self.turn == "BLACK":
+            self.whites_blacks_num[0]-=1
+        else:
+            self.whites_blacks_num[1]-=1
+        if self.board[row][col].role != None:
+            self.graveyard.append("{0}: {1}".format(str(self.board[row][col]),str(self.board[row][col].role)))
     def get_ability_selections(self,row,col):
         piece = self.board[row][col]
         if isinstance(piece,pcs.Piece) and piece.role != None:
@@ -134,7 +136,13 @@ class GameMaster():
         if self.turn == "WHITE":
             return "WHITE forfeits their career! The champion is BLACK!"
         else:
-            return "BLACK chooses the easy way out! The winner is WHITE!"
+            return "BLACK chooses the obviously inferior way out! The winner is WHITE!"
     def get_graveyard_victims(self):
-        if not self.keep_playing: return
         return self.graveyard
+    def check_lose_condition(self):
+        if self.whites_blacks_num[1] < 1:
+            self.keep_playing = False
+            return "BLACK has carelessly sacrificed all their soldiers in vain! WHITE dominates!"
+        elif self.whites_blacks_num[0] < 1:
+            self.keep_playing = False
+            return "WHITE has run dry of their valuable warriors like a nerd! BLACK wins!"
