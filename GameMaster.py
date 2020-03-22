@@ -118,7 +118,7 @@ class GameMaster():
             self.board[self.last_piece_clicked[0]][self.last_piece_clicked[1]] = []
         self.next_turn()
     def kill(self,row,col):
-        if self.board[row][col].role != 0:
+        if self.board[row][col].role != None:
             self.graveyard.append("{0}: {1}".format(str(self.board[row][col]),str(self.board[row][col].role)))
         self.board[row][col] = self.board[self.last_piece_clicked[0]][self.last_piece_clicked[1]]
         self.board[self.last_piece_clicked[0]][self.last_piece_clicked[1]] = []

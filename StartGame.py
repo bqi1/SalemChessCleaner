@@ -159,11 +159,6 @@ class ChessboardFrame(tk.Frame):
         board = self.gamemaster.board
         for row in range(8):
             for col in range(8):
-                if (row%2==0)==(col%2==0):
-                    tileColour="#4f3325"
-                else:
-                    tileColour="white"
-                self.tiles[row][col].config(bg=tileColour)
                 if len(ability_tiles) > 0 and [row,col] in ability_tiles:
                         self.tiles[row][col].config(bg='yellow')
                 if isinstance(board[row][col],Pieces.Piece):
@@ -174,6 +169,14 @@ class ChessboardFrame(tk.Frame):
                     self.tiles[row][col].config(image=self.pictures["Empty"])
                     if len(move_tiles) > 0 and [row,col] in move_tiles:
                         self.tiles[row][col].config(bg="blue")
+        for row in range(8):
+            for col in range(8):
+                if (row%2==0)==(col%2==0):
+                    tileColour="#4f3325"
+                else:
+                    tileColour="white"
+                if not [row,col] in kill_tiles and not [row,col] in move_tiles and not [row,col] in ability_tiles:
+                    self.tiles[row][col].config(bg=tileColour)
 
                         
 
