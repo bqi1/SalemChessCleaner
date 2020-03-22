@@ -15,17 +15,16 @@ class MainWindow(tk.Frame):
         self.graveyard_opened = False
         self.pictures={"Peek":tk.PhotoImage(file="Icons/Peek.png")}        
         self.gamemaster = GameMaster()  
-        self.chessboard = ChessboardFrame(self)
         self.message_board = MessageBoard(self)
+        self.chessboard = ChessboardFrame(self,self.gamemaster,self.message_board)
+
         self.setupWindow()
         
     def setupWindow(self):
         # Set up screen width, height, placement of windows. Create dictionary window
-        screen_width = self.parent.winfo_screenwidth()
-        screen_height = self.parent.winfo_screenheight()*5//4
-        x = screen_width//20
-        y = screen_height//25
-        self.parent.geometry('{}x{}+{}+{}'.format(screen_width*2//3,screen_height*2//3,x,y))
+        screen_width = self.parent.winfo_screenwidth()*107//100
+        screen_height = self.parent.winfo_screenheight()*14//10
+        self.parent.geometry('{}x{}+{}+{}'.format(screen_width*2//3,screen_height*2//3,0,0))
         self.parent.title("Salem Chess")
         new_window = tk.Toplevel(self.parent)
         self.dictionary_window = DictionaryWindow(new_window,self.gamemaster)
@@ -118,9 +117,11 @@ class DictionaryWindow(tk.Frame):
     def change_message(self,string):
         self.label.config(text=string)
 class ChessboardFrame(tk.Frame):
-    def __init__(self, parent, *args, **kwargs):
+    def __init__(self, parent, gamemaster, message_board,*args, **kwargs):
         tk.Frame.__init__(self,parent,*args,**kwargs)
         self.parent = parent
+        self.gamemaster = gamemaster
+        self.message_board = message_board
         self.pictures = {"Rook":tk.PhotoImage(file="Icons/rook.png"),\
             "RookFilled":tk.PhotoImage(file="Icons/rook-filled.png"),\
             "KnightFilled":tk.PhotoImage(file="Icons/knight-filled.png"),\
@@ -145,11 +146,37 @@ class ChessboardFrame(tk.Frame):
                     tileColour="white"
                 button = tk.Button(self.parent,bg=tileColour,\
                     command=partial(self.tile_click,row,col),\
-                        width=9,height=4)
+                        )
                 button.grid(row=row,column=col,sticky="sewn")
                 self.tiles[row][col] = button
+        self.message_board.change_message(self.gamemaster.get_turn_message())
+        self.update_board_screen([],[],[])
     def tile_click(self,row,column):
-        print(row,column)
+        move_tiles,kill_tiles,ability_tiles,message = self.gamemaster.tile_click(row,column)
+        self.message_board.change_message(message)
+        self.update_board_screen(move_tiles,kill_tiles,ability_tiles)
+    def update_board_screen(self,move_tiles,kill_tiles,ability_tiles):
+        board = self.gamemaster.board
+        for row in range(8):
+            for col in range(8):
+                if (row%2==0)==(col%2==0):
+                    tileColour="#4f3325"
+                else:
+                    tileColour="white"
+                self.tiles[row][col].config(bg=tileColour)
+                if len(ability_tiles) > 0 and [row,col] in ability_tiles:
+                        self.tiles[row][col].config(bg='yellow')
+                if isinstance(board[row][col],Pieces.Piece):
+                    self.tiles[row][col].config(image=board[row][col].picture)
+                    if len(kill_tiles) > 0 and [row,col] in kill_tiles:
+                        self.tiles[row][col].config(bg="red")
+                elif isinstance(board[row][col],list):
+                    self.tiles[row][col].config(image=self.pictures["Empty"])
+                    if len(move_tiles) > 0 and [row,col] in move_tiles:
+                        self.tiles[row][col].config(bg="blue")
+
+                        
+
 class MessageBoard(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self,parent,*args,**kwargs)
@@ -160,7 +187,11 @@ class MessageBoard(tk.Frame):
         self.label.grid(row=0,rowspan=3)
 
     def change_message(self,string):
+        if string == "":
+            return
         self.label.config(text=string)
+    def clear_message(self):
+        self.label.config(text="")
 if __name__ == "__main__":
     root = tk.Tk()
     MainWindow(root).grid()

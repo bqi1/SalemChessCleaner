@@ -15,10 +15,13 @@ class Piece(ABC):
     @abstractmethod
     def remove_status(self,status):
         pass
+    @abstractmethod
+    def __str__(self):
+        pass
 class Rook(Piece):
     def __init__(self,colour):
         self.colour = colour
-        self.role = 0
+        self.role = None
         self.statuses = []
         if(self.colour == "BLACK"):
             self.picture = tk.PhotoImage(file="Icons/rook-filled.png")
@@ -53,6 +56,8 @@ class Rook(Piece):
                         break
         moveset,killset=self.role.filter_moves_and_kills(self.colour,moves,row,column,board)
         return moveset,killset
+    def __str__(self):
+        return self.colour+" Rook"
 class Knight(Piece):
     def __init__(self,colour):
         self.colour = colour
@@ -82,6 +87,8 @@ class Knight(Piece):
                     moves.append([row+row1,column+col1])
         moveset,killset=self.role.filter_moves_and_kills(self.colour,moves,row,column,board)
         return moveset,killset
+    def __str__(self):
+        return self.colour+" Knight"
 class Bishop(Piece):
     def __init__(self,colour):
         self.colour = colour
@@ -123,6 +130,8 @@ class Bishop(Piece):
 
         moveset,killset=self.role.filter_moves_and_kills(self.colour,moves,row,column,board)
         return moveset,killset
+    def __str__(self):
+        return self.colour+" Bishop"
 class King(Piece):
     def __init__(self,colour):
         self.colour = colour
@@ -153,6 +162,8 @@ class King(Piece):
                     moves.append([row+row_change,column+col_change])
         moveset,killset=self.role.filter_moves_and_kills(self.colour,moves,row,column,board)
         return moveset,killset
+    def __str__(self):
+        return self.colour+" King"
 class Queen(Piece):
     def __init__(self,colour):
         self.colour = colour
@@ -204,6 +215,8 @@ class Queen(Piece):
                     col_direction = col_direction+col1
         moveset,killset=self.role.filter_moves_and_kills(self.colour,moves,row,column,board)
         return moveset,killset
+    def __str__(self):
+        return self.colour+" Queen"
 class Pawn(Piece):
     def __init__(self,colour):
         self.colour = colour
@@ -225,6 +238,7 @@ class Pawn(Piece):
             return
     def get_moves_and_kills(self,row,column,board):
         moves = []
+        killset = []
         if self.colour == "WHITE":
             increment = -1
         else:
@@ -232,16 +246,17 @@ class Pawn(Piece):
         if 0<=row+increment<8 and board[row+increment][column] == []:
             moves.append([row+increment,column])
         if self.start and 0<=row+increment*2<8 and board[row+increment*2][column] == []:
-            self.start = False
             moves.append([row+increment*2,column])
         for col_change in [1,-1]:
             if self.colour == "WHITE":
                 row_change = -1
             else:
                 row_change = 1
-            if 0<=row+row_change<8 and 0<=column+col_change<8 and isinstance(board[row+row_change][column+col_change],Piece):
-                moves.append([row+row_change,column+col_change])
-        moveset,killset=self.role.filter_moves_and_kills(self.colour,moves,row,column,board)
-        return moveset,killset
+            if 0<=row+row_change<8 and 0<=column+col_change<8 and isinstance(board[row+row_change][column+col_change],Piece)\
+                and board[row+row_change][column+col_change].colour != self.colour:
+                killset.append([row+row_change,column+col_change])
+        return moves,killset
+    def __str__(self):
+        return self.colour+" Pawn"
 
 
